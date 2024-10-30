@@ -1,0 +1,16 @@
+[package]
+name = "fractals"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# Logging and global settings.
+log = "0.4"
+log4rs = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.8"
+serde_json = "1.0"
+tokio = { version = "1", features = ["full"] }
+inline_colorization = "0.1.6"
