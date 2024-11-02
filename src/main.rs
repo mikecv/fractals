@@ -40,7 +40,7 @@ fn main() {
     info!("Application started: {} v({})", settings.program_name, settings.program_ver);
 
     // create fractals class instance.
-    let fractals: Fractal = Fractal::init(settings);
+    let mut fractals: Fractal = Fractal::init(settings);
 
     // Command line application menu.
     // Keep looping until user selects the quit option.
@@ -49,15 +49,15 @@ fn main() {
         menu::print_menu(&fractals.state);
 
         // Get the user's parameter(s) selection.
-        let choice = menu::get_user_input("\nOption: ");
+        let choice = menu::get_user_input("Option: ");
 
         // Apply the users selection.
         match choice.trim() {
-            // Option 1 selected.
-            "1" => menu::option_one(),
+            // Initialise new fractal.
+            "1" => menu::new_fractal(&mut fractals),
 
             // Option 2 selected.
-            "2" => menu::option_two(),
+            "2" => menu::option_two(&mut fractals),
 
             // Quitting application.
             "q" | "Q" => {

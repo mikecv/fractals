@@ -8,6 +8,9 @@ use crate::AppState;
 pub struct Fractal {
     pub settings: Settings,
     pub state: AppState,
+    pub rows: u32,
+    pub cols: u32,
+    pub max_its: u32,
 }
 
 // Initialise all struct variables.
@@ -19,6 +22,9 @@ impl Fractal {
         Fractal {
             settings: settings,
             state: AppState::AppStart,
+            rows: 0,
+            cols: 0,
+            max_its: 0,
         }
     }
 }
