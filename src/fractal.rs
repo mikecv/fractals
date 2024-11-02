@@ -2,10 +2,12 @@
 
 use log::{info};
 use crate::settings::Settings;
+use crate::AppState;
 
 // Struct of parameters fractals generation.
 pub struct Fractal {
     pub settings: Settings,
+    pub state: AppState,
 }
 
 // Initialise all struct variables.
@@ -16,6 +18,7 @@ impl Fractal {
 
         Fractal {
             settings: settings,
+            state: AppState::AppStart,
         }
     }
 }

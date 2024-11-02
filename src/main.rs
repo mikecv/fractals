@@ -22,6 +22,12 @@ async fn load_settings() -> Settings {
     settings
 }
 
+// Define constance for program state.
+pub enum AppState {
+    AppStart,
+    NewFractal,
+}
+
 fn main() {
     // Logging configuration held in log4rs.yml.
     log4rs::init_file("log4rs.yml", Default::default()).unwrap();
@@ -34,15 +40,18 @@ fn main() {
     info!("Application started: {} v({})", settings.program_name, settings.program_ver);
 
     // create fractals class instance.
-    let _fractals: Fractal = Fractal::init(settings);
+    let fractals: Fractal = Fractal::init(settings);
 
     // Command line application menu.
     // Keep looping until user selects the quit option.
     loop {
-        menu::print_menu();
+        // Display the menu applicable to the application state.
+        menu::print_menu(&fractals.state);
+
+        // Get the user's parameter(s) selection.
         let choice = menu::get_user_input("\nOption: ");
 
-        // Get the user's choice and apply.
+        // Apply the users selection.
         match choice.trim() {
             // Option 1 selected.
             "1" => menu::option_one(),

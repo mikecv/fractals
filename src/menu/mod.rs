@@ -1,14 +1,25 @@
 // Application menu functions.
 
+use log::{info};
 use inline_colorization::*;
 use std::io::{self, Write};
 
+use crate::AppState;
+
 // Print the menu selection.
 // This should be statefull assuming possible selections.
-pub fn print_menu() {
+pub fn print_menu(state: &AppState) {
     println!("{color_green}{style_bold}====\nMenu\n====\n{style_reset}{color_reset}");
-    println!("1) Option One");
-    println!("2) Option Two");
+    match state {
+        AppState::AppStart => {
+            info!("Application state at menu: START");
+            println!("1) Option One");
+        },
+        AppState::NewFractal => {
+            info!("Application state: NEW FRACTAL");
+            println!("2) Option Two");
+        },
+    }
     println!("Q) Quit");
 }
 
