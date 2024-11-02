@@ -45,8 +45,7 @@ pub fn new_fractal(fractals : &mut Fractal) {
     let rows = get_user_input("Number of rows: ");
     let cols = get_user_input("Number of columns: ");
     let max_its = get_user_input("Max iterations: ");
-    fractals.rows = rows.trim().parse().unwrap();
-    fractals.cols = cols.trim().parse().unwrap();
+    fractals.init_fractal_image(rows.trim().parse().unwrap(), cols.trim().parse().unwrap());
     fractals.max_its = max_its.trim().parse().unwrap();
     info!("Fractal with, rows: {}, cols: {}, max iterations: {}", fractals.rows, fractals.cols, fractals.max_its);
 }

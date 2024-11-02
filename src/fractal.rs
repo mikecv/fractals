@@ -11,6 +11,7 @@ pub struct Fractal {
     pub rows: u32,
     pub cols: u32,
     pub max_its: u32,
+    pub escape_its: Vec<Vec<u32>>,
 }
 
 // Initialise all struct variables.
@@ -25,6 +26,14 @@ impl Fractal {
             rows: 0,
             cols: 0,
             max_its: 0,
+            escape_its: Vec::new(),
         }
+    }
+ 
+    // Method to initialize fractal image size.
+    pub fn init_fractal_image(&mut self, rows: u32, cols: u32) {
+        self.rows = rows;
+        self.cols = cols;
+        self.escape_its = vec![vec![0; cols as usize]; rows as usize];
     }
 }

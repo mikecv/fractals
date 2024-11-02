@@ -61,12 +61,12 @@ fn main() {
 
             // Quitting application.
             "q" | "Q" => {
-                println!("\nQuitting...");
+                println!("Quitting...");
                 break;
             }
 
             // Invalid option selected.
-            _ => println!("Invalid option.\n"),
+            _ => println!("Invalid option."),
         }
     }
 }
