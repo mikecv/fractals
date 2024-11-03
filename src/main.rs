@@ -23,6 +23,7 @@ async fn load_settings() -> Settings {
 }
 
 // Define constance for program state.
+#[derive(Debug)]
 pub enum AppState {
     AppStart,
     NewFractal,
@@ -39,7 +40,7 @@ fn main() {
     // Now that settings have been loaded asynchronously, run the rest of the program synchronously.
     info!("Application started: {} v({})", settings.program_name, settings.program_ver);
 
-    // create fractals class instance.
+    // Create fractals class instance.
     let mut fractals: Fractal = Fractal::init(settings);
 
     // Command line application menu.
@@ -54,10 +55,10 @@ fn main() {
         // Apply the users selection.
         match choice.trim() {
             // Initialise new fractal.
-            "1" => menu::new_fractal(&mut fractals),
+            "n" | "N" => menu::new_fractal(&mut fractals),
 
-            // Option 2 selected.
-            "2" => menu::option_two(&mut fractals),
+            // Print class variables.
+            "p" | "P" => menu::print_class(&mut fractals),
 
             // Quitting application.
             "q" | "Q" => {

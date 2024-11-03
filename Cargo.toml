@@ -14,3 +14,4 @@ serde_yaml = "0.8"
 serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }
 inline_colorization = "0.1.6"
+num-complex = "0.4"
