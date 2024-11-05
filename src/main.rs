@@ -22,6 +22,13 @@ async fn load_settings() -> Settings {
     settings
 }
 
+// Define constance for program state.
+#[derive(Debug)]
+pub enum AppState {
+    AppStart,
+    NewFractal,
+}
+
 fn main() {
     // Logging configuration held in log4rs.yml.
     log4rs::init_file("log4rs.yml", Default::default()).unwrap();
@@ -33,31 +40,34 @@ fn main() {
     // Now that settings have been loaded asynchronously, run the rest of the program synchronously.
     info!("Application started: {} v({})", settings.program_name, settings.program_ver);
 
-    // create fractals class instance.
-    let _fractals: Fractal = Fractal::init(settings);
+    // Create fractals class instance.
+    let mut fractals: Fractal = Fractal::init(settings);
 
     // Command line application menu.
     // Keep looping until user selects the quit option.
     loop {
-        menu::print_menu();
-        let choice = menu::get_user_input("\nOption: ");
+        // Display the menu applicable to the application state.
+        menu::print_menu(&fractals.state);
 
-        // Get the user's choice and apply.
+        // Get the user's parameter(s) selection.
+        let choice = menu::get_user_input("Option: ");
+
+        // Apply the users selection.
         match choice.trim() {
-            // Option 1 selected.
-            "1" => menu::option_one(),
+            // Initialise new fractal.
+            "n" | "N" => menu::new_fractal(&mut fractals),
 
-            // Option 2 selected.
-            "2" => menu::option_two(),
+            // Print class variables.
+            "p" | "P" => menu::print_class(&mut fractals),
 
             // Quitting application.
             "q" | "Q" => {
-                println!("\nQuitting...");
+                println!("Quitting...");
                 break;
             }
 
             // Invalid option selected.
-            _ => println!("Invalid option.\n"),
+            _ => println!("Invalid option."),
         }
     }
 }
