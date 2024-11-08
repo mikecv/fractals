@@ -27,6 +27,7 @@ async fn load_settings() -> Settings {
 pub enum AppState {
     AppStart,
     NewFractal,
+    DivComplete,
 }
 
 fn main() {
@@ -56,6 +57,9 @@ fn main() {
         match choice.trim() {
             // Initialise new fractal.
             "n" | "N" => menu::new_fractal(&mut fractals),
+
+            // Calculate fractal divergence.
+            "c" | "C" => menu::cal_divergence(&mut fractals),
 
             // Print class variables.
             "p" | "P" => menu::print_class(&mut fractals),

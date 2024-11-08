@@ -60,9 +60,14 @@ impl Fractal {
         let top_offset: f64 = self.mid_pt.im + (self.rows as f64 / 2.0) * self.pt_div;
         self.top_lim = top_offset;
 
-        // At this point we have an initialised fractal.
-        // From here we can re-initialise a new fractal or proceed to calculate
-        // point divergence for the initialised fractal.
-        self.state = AppState::NewFractal;
+        // Left top vertice.
+        self.pt_lt.re = self.left_lim;
+        self.pt_lt.im = self.top_lim;
+    }
+
+    // Methed to calculate fractal divergence at a single point.
+    // TODO
+    pub fn cal_row_divergence(&mut self, _row: u32, st_c: Complex<f64>) {
+        println!("Divergence: {:?}", st_c);
     }
 }
