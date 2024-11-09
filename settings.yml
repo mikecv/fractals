@@ -3,3 +3,5 @@ program_name:       "fractals"
 program_ver:        0.1.0
 program_devs:       ["Michael Cvitanovich"]
 program_web:        "galacticwingcommander"    
+# Fractals
+fractal_file:       "fractal_settings.toml"

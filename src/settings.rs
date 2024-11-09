@@ -6,4 +6,5 @@ pub struct Settings {
     pub program_ver: String,
     pub program_devs: Vec<String>,
     pub program_web: String,
+    pub fractal_file: String,
 }
