@@ -56,7 +56,10 @@ fn main() {
         // Apply the users selection.
         match choice.trim() {
             // Initialise new fractal.
-            "n" | "N" => menu::new_fractal(&mut fractals),
+            "n" | "N" => menu::enter_fractal(&mut fractals),
+
+            // Initialise new fractal from file.
+            "f" | "F" => menu::load_settings(&mut fractals),
 
             // Calculate fractal divergence.
             "c" | "C" => menu::cal_divergence(&mut fractals),
