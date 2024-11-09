@@ -22,11 +22,13 @@ pub fn print_menu(state: &AppState) {
             info!("Application state: NEW FRACTAL");
             println!("N) Initialise new fractal");
             println!("C) Calculate fractal divergence");
+            println!("S) Save fractal settings to file");
         },
         AppState::DivComplete => {
             info!("Application state: DIVERGENCE DONE");
             println!("N) Initialise new fractal");
             println!("C) Calculate fractal divergence");
+            println!("S) Save fractal settings to file");
         },
     }
     println!("P) Print class variables");
@@ -105,6 +107,11 @@ pub fn cal_divergence(fractals : &mut Fractal) {
 
     // At this point we have divergence iterations at every point.
     fractals.state = AppState::DivComplete;
+}
+
+// Save fractal settings to file.
+pub fn save_settings(_fractals: &mut Fractal) {
+    info!("Saving fractal settings to file..");
 }
 
 // Function to print out the state of the class variables.

@@ -64,6 +64,9 @@ fn main() {
             // Print class variables.
             "p" | "P" => menu::print_class(&mut fractals),
 
+            // Save fractal settings to files.
+            "s" | "S" => menu::save_settings(&mut fractals),
+
             // Quitting application.
             "q" | "Q" => {
                 println!("Quitting...");
