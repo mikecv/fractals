@@ -5,6 +5,7 @@ use log::{info};
 use inline_colorization::*;
 use num_complex::Complex;
 use std::io::{self, Write};
+use std::str::FromStr;
 use std::time::{Instant};
 
 use crate::AppState;
@@ -39,41 +40,54 @@ pub fn print_menu(state: &AppState) {
     println!("Q) Quit\n");
 }
 
-// Get the user input(s) for the menu selection.
-// Inputs returned as string(s).
+// Get user input for string input.
+// Used for menu selection.
 pub fn get_user_input(prompt: &str) -> String {
-    info!("Displing menu and getting user response.");
-
     print!("{}", prompt);
-    io::stdout().flush().unwrap();
-    
+    io::stdout().flush().expect("Failed to flush stdout");
+
     let mut input = String::new();
-    io::stdin().read_line(&mut input).expect("Failed to read line.");
-    input
+    io::stdin().read_line(&mut input).expect("Failed to read line");
+    input.trim().to_string()
+}
+
+// Get the user input(s0) for the menu selection.
+// Check input against required type.
+pub fn get_user_input_numeric<T: FromStr>(prompt: &str) -> T
+where
+    T::Err: std::fmt::Debug,
+{
+    loop {
+        print!("{}", prompt);
+        io::stdout().flush().expect("Failed to flush stdout.");
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("Failed to read line.");
+
+        // Attempt to parse the input to the expected type `T`.
+        match input.trim().parse::<T>() {
+            Ok(value) => return value,
+            Err(_) => println!("Invalid input. Please enter a valid value."),
+        }
+    }
 }
 
 // User selected option to initialise new fractal.
-// Parameters"
-// rows : u32 - number of rows in image.
-// cols : u32 - number of columns in image.
-// mid_pt_r : f64 - real part of image centrepoint.
-// mid_pt_i : f64 - imaginary part of image centrepoint.
-// pt_div : f64 - division of points in BOTH axis.
-// max_its : u32 - max number of iterations to escape.
+// Does type checking.
 pub fn enter_fractal(fractals : &mut Fractal) {
     info!("Initialising new fractal by user.");
 
-    let rows = get_user_input("Number of rows: ");
-    let cols = get_user_input("Number of columns: ");
-    let mid_pt_r = get_user_input("Midpoint Real axis: ");
-    let mid_pt_i = get_user_input("Midpoint Imaginary axis: ");
-    let pt_div = get_user_input("Point division: ");
-    let max_its = get_user_input("Max iterations: ");
-    fractals.mid_pt = Complex::new(mid_pt_r.trim().parse().unwrap(), mid_pt_i.trim().parse().unwrap());
-    fractals.max_its = max_its.trim().parse().unwrap();
-    fractals.pt_div = pt_div.trim().parse().unwrap();
-    fractals.init_fractal_image(rows.trim().parse().unwrap(),
-                                cols.trim().parse().unwrap(),
+    let rows: u32 = get_user_input_numeric("Number of rows: ");
+    let cols: u32 = get_user_input_numeric("Number of columns: ");
+    let mid_pt_r: f64  = get_user_input_numeric("Midpoint Real axis: ");
+    let mid_pt_i: f64 = get_user_input_numeric("Midpoint Imaginary axis: ");
+    let pt_div: f64 = get_user_input_numeric("Point division: ");
+    let max_its: u32 = get_user_input_numeric("Max iterations: ");
+    fractals.mid_pt = Complex::new(mid_pt_r, mid_pt_i);
+    fractals.max_its = max_its;
+    fractals.pt_div = pt_div;
+    fractals.init_fractal_image(rows,
+                                cols,
                                 fractals.mid_pt,
                                 fractals.pt_div);
     info!("Fractal rows: {}, cols: {}", fractals.rows, fractals.cols);
