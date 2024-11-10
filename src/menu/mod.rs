@@ -5,6 +5,7 @@ use log::{info};
 use inline_colorization::*;
 use num_complex::Complex;
 use std::io::{self, Write};
+use std::time::{Instant};
 
 use crate::AppState;
 use crate::fractal::Fractal;
@@ -16,7 +17,8 @@ pub fn print_menu(state: &AppState) {
     match state {
         AppState::AppStart => {
             info!("Application state at menu: START");
-            println!("N) Initialise new fractal");
+            println!("E) Enter new fractal settings");
+            println!("F) Initialise fractal from file");
         },
         AppState::NewFractal => {
             info!("Application state: NEW FRACTAL");
@@ -105,7 +107,7 @@ pub fn load_settings(fractals : &mut Fractal) {
 
 // Save fractal settings to file.
 pub fn save_settings(fractals: &mut Fractal) {
-    info!("Saving fractal settings to file..");
+    info!("Saving fractal settings to file.");
 
     // Clone the file path to avoid simultaneous mutable and immutable borrows.
     let file_path = fractals.settings.fractal_file.clone();
@@ -119,6 +121,9 @@ pub fn save_settings(fractals: &mut Fractal) {
 // divergence on more than one row at a time.
 pub fn cal_divergence(fractals : &mut Fractal) {
     info!("Calculating fractal divergence.");
+
+    // Initialise timer for divergence caluclation.
+    let calc_start = Instant::now();
 
     // Start with the left top point.
     let mut st_c: Complex<f64> = fractals.pt_lt;
@@ -135,6 +140,10 @@ pub fn cal_divergence(fractals : &mut Fractal) {
         // Calculate divergence for row.
         fractals.cal_row_divergence(row, st_c);
     }
+
+    // Determine delta time for divergence calculation.
+    fractals.calc_duration = calc_start.elapsed();
+    info!("Divergence calculations in: {:?}", fractals.calc_duration);
 
     // At this point we have divergence iterations at every point.
     fractals.state = AppState::DivComplete;

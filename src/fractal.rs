@@ -6,6 +6,7 @@ use num_complex::Complex;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::{self};
+use std::time::{Duration};
 use toml;
 
 use crate::settings::Settings;
@@ -24,6 +25,7 @@ pub struct Fractal {
     pub top_lim: f64,
     pub escape_its: Vec<Vec<u32>>,
     pub pt_lt: Complex<f64>,
+    pub calc_duration: Duration,
 }
 
 // Sub-Struct of parameters for fractal setting.
@@ -55,6 +57,7 @@ impl Fractal {
             top_lim: 0.0,
             escape_its: Vec::new(),
             pt_lt: Complex::new(0.0, 0.0),
+            calc_duration: Duration::new(0, 0),
         }
     }
  
@@ -117,8 +120,38 @@ impl Fractal {
     }
 
     // Methed to calculate fractal divergence at a single point.
-    // TODO
-    pub fn cal_row_divergence(&mut self, _row: u32, st_c: Complex<f64>) {
-        println!("Divergence: {:?}", st_c);
+    // Arguments:
+    //      row: u32            The row number from the top, starting at 0.
+    //      st_c: Complex<f64>  Left most point of row to calculate divergence for.
+    pub fn cal_row_divergence(&mut self, row: u32, st_c: Complex<f64>) {
+
+        // Iterante over all the columns in the row.
+        for col in 0..self.cols {
+            // Define diverges flag and set to false.
+            let mut diverges: bool = false;
+
+            // Initialise divergence resukt to complex 0.
+            let mut it_fn: Complex<f64> = Complex::new(0.0, 0.0);
+
+            // Initialise number of iterations.
+            let mut num_its: u32 = 1;
+
+            // Keep iterating until function diverges.
+            while (diverges == false) && (num_its < self.max_its) {
+                // Perform Mandelbrot function Fn+1 = Fn^2 + st_c
+                it_fn = (it_fn * it_fn) + st_c;
+                // Check if function diverges.
+                // Will diverge if modulus equal or greater than 2.
+                let mod_fn = Complex::norm(it_fn);
+                if mod_fn > 2.0 {
+                    diverges = true
+                }
+                else {
+                    num_its += 1;
+                }
+            }
+            // Save number of iterations for point.
+            self.escape_its[row as usize][col as usize] = num_its;
+        }
     }
 }

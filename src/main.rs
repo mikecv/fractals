@@ -55,8 +55,8 @@ fn main() {
 
         // Apply the users selection.
         match choice.trim() {
-            // Initialise new fractal.
-            "n" | "N" => menu::enter_fractal(&mut fractals),
+            // Initialise new fractal (user entry).
+            "e" | "E" => menu::enter_fractal(&mut fractals),
 
             // Initialise new fractal from file.
             "f" | "F" => menu::load_settings(&mut fractals),
