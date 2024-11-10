@@ -55,23 +55,23 @@ fn main() {
 
         // Apply the users selection.
         match choice.trim() {
-            // Initialise new fractal.
-            "n" | "N" => menu::enter_fractal(&mut fractals),
+            // Initialise new fractal (user entry).
+            "e" => menu::enter_fractal(&mut fractals),
 
             // Initialise new fractal from file.
-            "f" | "F" => menu::load_settings(&mut fractals),
+            "f" => menu::load_settings(&mut fractals),
 
             // Calculate fractal divergence.
-            "c" | "C" => menu::cal_divergence(&mut fractals),
+            "c" => menu::cal_divergence(&mut fractals),
 
             // Print class variables.
-            "p" | "P" => menu::print_class(&mut fractals),
+            "p" => menu::print_class(&mut fractals),
 
             // Save fractal settings to files.
-            "s" | "S" => menu::save_settings(&mut fractals),
+            "s" => menu::save_settings(&mut fractals),
 
             // Quitting application.
-            "q" | "Q" => {
+            "q" => {
                 println!("Quitting...");
                 break;
             }
