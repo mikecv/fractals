@@ -47,7 +47,7 @@ impl Fractal {
 
         Fractal {
             settings: settings,
-            state: AppState::AppStart,
+            state: AppState::Settings,
             rows: 0,
             cols: 0,
             mid_pt: Complex::new(0.0, 0.0),

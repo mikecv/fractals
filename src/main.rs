@@ -25,9 +25,10 @@ async fn load_settings() -> Settings {
 // Define constance for program state.
 #[derive(Debug)]
 pub enum AppState {
-    AppStart,
-    NewFractal,
-    DivComplete,
+    Settings,
+    Divergence,
+    ColourProfile,
+    Rendering,
 }
 
 fn main() {
@@ -56,19 +57,19 @@ fn main() {
         // Apply the users selection.
         match choice.trim() {
             // Initialise new fractal (user entry).
-            "e" => menu::enter_fractal(&mut fractals),
+            "a" => menu::enter_fractal(&mut fractals),
 
             // Initialise new fractal from file.
-            "f" => menu::load_settings(&mut fractals),
+            "b" => menu::load_settings(&mut fractals),
 
             // Calculate fractal divergence.
             "c" => menu::cal_divergence(&mut fractals),
 
+            // Save fractal settings to files.
+            "d" => menu::save_settings(&mut fractals),
+
             // Print class variables.
             "p" => menu::print_class(&mut fractals),
-
-            // Save fractal settings to files.
-            "s" => menu::save_settings(&mut fractals),
 
             // Quitting application.
             "q" => {
