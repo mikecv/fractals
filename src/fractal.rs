@@ -37,6 +37,7 @@ pub struct FractalConfig {
     pub mid_pt: (f64, f64),
     pub pt_div: f64,
     pub max_its: u32,
+    pub escape_its: Vec<Vec<u32>>,
 }
 
 // Initialise all struct variables.
@@ -69,6 +70,7 @@ impl Fractal {
             mid_pt: (self.mid_pt.re, self.mid_pt.im),
             pt_div: self.pt_div,
             max_its: self.max_its,
+            escape_its: self.escape_its.clone(),
         }
     }
 
