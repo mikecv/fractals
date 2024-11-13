@@ -10,12 +10,10 @@ use std::time::{Duration};
 use toml;
 
 use crate::settings::Settings;
-use crate::AppState;
 
 // Struct of parameters for fractals generation.
 pub struct Fractal {
     pub settings: Settings,
-    pub state: AppState,
     pub rows: u32,
     pub cols: u32,
     pub mid_pt: Complex<f64>,
@@ -48,7 +46,6 @@ impl Fractal {
 
         Fractal {
             settings: settings,
-            state: AppState::Settings,
             rows: 0,
             cols: 0,
             mid_pt: Complex::new(0.0, 0.0),

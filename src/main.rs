@@ -22,15 +22,6 @@ async fn load_settings() -> Settings {
     settings
 }
 
-// Define constance for program state.
-#[derive(Debug)]
-pub enum AppState {
-    Settings,
-    Divergence,
-    ColourProfile,
-    Rendering,
-}
-
 fn main() {
     // Logging configuration held in log4rs.yml.
     log4rs::init_file("log4rs.yml", Default::default()).unwrap();
@@ -49,7 +40,7 @@ fn main() {
     // Keep looping until user selects the quit option.
     loop {
         // Display the menu applicable to the application state.
-        menu::print_menu(&fractals.state);
+        menu::print_menu();
 
         // Get the user's parameter(s) selection.
         let choice = menu::get_user_input("Option: ");
@@ -65,11 +56,11 @@ fn main() {
             // Calculate fractal divergence.
             "c" => menu::cal_divergence(&mut fractals),
 
-            // Save fractal settings to files.
+            // Save fractal settings and results to files.
             "d" => menu::save_settings(&mut fractals),
 
             // Print class variables.
-            "p" => menu::print_class(&mut fractals),
+            "e" => menu::print_class(&mut fractals),
 
             // Quitting application.
             "q" => {

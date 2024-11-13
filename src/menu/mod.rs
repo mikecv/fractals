@@ -8,39 +8,17 @@ use std::io::{self, Write};
 use std::str::FromStr;
 use std::time::{Instant};
 
-use crate::AppState;
 use crate::fractal::Fractal;
 
-// Print the menu selection.
-// This should be statefull assuming possible selections.
-pub fn print_menu(state: &AppState) {
+// Print the menu prompt / selections.
+pub fn print_menu() {
     println!("{color_green}{style_bold}\n====\nMenu\n====\n{style_reset}{color_reset}");
-    match state {
-        AppState::Settings => {
-            println!("A) Enter new fractal settings");
-            println!("B) Initialise fractal from file");
-        },
-        AppState::Divergence => {
-            println!("A) Enter new fractal settings");
-            println!("B) Initialise fractal from file");
-            println!("C) Calculate fractal divergence");
-            println!("D) Save fractal settings to file");
-        },
-        AppState::ColourProfile => {
-            println!("A) Enter new fractal settings");
-            println!("B) Initialise fractal from file");
-            println!("C) Calculate fractal divergence");
-            println!("D) Save fractal settings to file");
-        },
-        AppState::Rendering => {
-            println!("A) Enter new fractal settings");
-            println!("B) Initialise fractal from file");
-            println!("C) Calculate fractal divergence");
-            println!("D) Save fractal settings to file");
-        },
-    }
-    println!("P) Print class variables");
-    println!("Q) Quit\n");
+    println!("A) Enter new fractal settings");
+    println!("B) Initialise fractal from file");
+    println!("C) Calculate fractal divergence");
+    println!("D) Save fractal settings & results to file");
+    println!("E) Print class variables");
+    println!("{color_red}{style_bold}Q) Quit\n{style_reset}{color_reset}");
 }
 
 // Get user input for string input.
@@ -101,7 +79,6 @@ pub fn enter_fractal(fractals : &mut Fractal) {
     // At this point we have an initialised fractal.
     // From here we can re-initialise a new fractal or proceed to calculate
     // point divergence for the initialised fractal.
-    fractals.state = AppState::Divergence;
 }
 
 // User selected option to initialise new fractal.
@@ -119,7 +96,6 @@ pub fn load_settings(fractals : &mut Fractal) {
     // At this point we have an initialised fractal.
     // From here we can re-initialise a new fractal or proceed to calculate
     // point divergence for the initialised fractal.
-    fractals.state = AppState::Divergence;
 }
 
 // Save fractal settings to file.
@@ -164,12 +140,10 @@ pub fn cal_divergence(fractals : &mut Fractal) {
 
     // At this point we have divergence iterations at every point.
     // The next stage will be to configure the rendering.
-    fractals.state = AppState::ColourProfile;
 }
 
-// Function to print out the state of the class variables.
+// Function to print out the state of most of the class variables.
 pub fn print_class(fractals : &mut Fractal) {
-    println!("App state      : {:?}", fractals.state);
     println!("Rows           : {:?}", fractals.rows);
     println!("Columns        : {:?}", fractals.cols);
     println!("Centre point   : {:?}", fractals.mid_pt);
