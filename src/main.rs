@@ -1,6 +1,8 @@
 use log::info;
 use log4rs;
 
+use std::path::PathBuf;
+use std::fs::create_dir_all;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
@@ -30,6 +32,13 @@ fn main() {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let settings = rt.block_on(load_settings());
 
+    // Check if folder for results exists, if not, create it.
+    let mut wrt_path = PathBuf::new();       
+    wrt_path.push(&settings.fractals_folder);
+    if !wrt_path.exists() {
+        create_dir_all(&wrt_path).unwrap();
+    }
+
     // Now that settings have been loaded asynchronously, run the rest of the program synchronously.
     info!("Application started: {} v({})", settings.program_name, settings.program_ver);
 
@@ -57,10 +66,10 @@ fn main() {
             "c" => menu::cal_divergence(&mut fractals),
 
             // Save fractal settings and results to files.
-            "d" => menu::save_settings(&mut fractals),
+            "f" => menu::save_settings(&mut fractals),
 
             // Print class variables.
-            "e" => menu::print_class(&mut fractals),
+            "g" => menu::print_class(&mut fractals),
 
             // Quitting application.
             "q" => {

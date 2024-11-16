@@ -9,7 +9,7 @@
 /logs/*.log
 
 # Ignore fractal settings files.
-fractal_settings.toml
+/my_fractals
 
 # Ignore notes file.
 notes.txt

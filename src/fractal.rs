@@ -5,6 +5,7 @@ use log::{info};
 use num_complex::Complex;
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::f64::consts;
 use std::io::{self};
 use std::time::{Duration};
 use toml;
@@ -125,30 +126,53 @@ impl Fractal {
     pub fn cal_row_divergence(&mut self, row: u32, st_c: Complex<f64>) {
 
         // Iterante over all the columns in the row.
+        // Starting point is left of the row.
+        let mut pt_row: Complex<f64> = st_c;
+
         for col in 0..self.cols {
+            // Iterate point along th
+            if col > 0 {
+                pt_row.re += self.pt_div;
+            }
+
             // Define diverges flag and set to false.
             let mut diverges: bool = false;
 
-            // Initialise divergence resukt to complex 0.
-            let mut it_fn: Complex<f64> = Complex::new(0.0, 0.0);
+            // Initialise divergence result to complex 0.
+            let mut px_fn: Complex<f64> = Complex::new(0.0, 0.0);
 
             // Initialise number of iterations.
             let mut num_its: u32 = 1;
 
             // Keep iterating until function diverges.
-            while (diverges == false) && (num_its < self.max_its) {
-                // Perform Mandelbrot function Fn+1 = Fn^2 + st_c
-                it_fn = (it_fn * it_fn) + st_c;
+            while !diverges && (num_its < self.max_its) {
+                // Perform Mandelbrot function Fn+1 = Fn^2 + pt_row.
+                px_fn = (px_fn * px_fn) + pt_row;
                 // Check if function diverges.
                 // Will diverge if modulus equal or greater than 2.
-                let mod_fn = Complex::norm(it_fn);
-                if mod_fn > 2.0 {
-                    diverges = true
+                if px_fn.norm() >= 2.0 {
+                    diverges = true;
                 }
                 else {
                     num_its += 1;
                 }
             }
+
+            // Calculate fractional divergence for higher definition.
+            let mod_fn = px_fn.norm();
+            let mu_log = if mod_fn > consts::E {
+                (mod_fn.ln().ln()) / consts::LN_2
+            } else {
+                0.0
+            };
+            let mut mu = num_its as f64 + 1.0 - mu_log;
+
+            // Limit fractional divergence to maximum iterations
+            if mu > self.max_its as f64 {
+                mu = self.max_its as f64;
+            }
+            num_its = mu as u32;
+
             // Save number of iterations for point.
             self.escape_its[row as usize][col as usize] = num_its;
         }

@@ -13,12 +13,17 @@ use crate::fractal::Fractal;
 // Print the menu prompt / selections.
 pub fn print_menu() {
     println!("{color_green}{style_bold}\n====\nMenu\n====\n{style_reset}{color_reset}");
+
     println!("A) Enter new fractal settings");
     println!("B) Initialise fractal from file");
     println!("C) Calculate fractal divergence");
-    println!("D) Save fractal settings & results to file");
-    println!("E) Print class variables");
-    println!("{color_red}{style_bold}Q) Quit\n{style_reset}{color_reset}");
+    println!("D) Define colour profile");
+    println!("E) Render fractal image");
+
+    println!("F) Save fractal settings & results to file");
+    println!("G) Print class variables");
+
+    println!("{color_red}{style_bold}\nQ) Quit\n{style_reset}{color_reset}");
 }
 
 // Get user input for string input.
@@ -86,8 +91,8 @@ pub fn enter_fractal(fractals : &mut Fractal) {
 pub fn load_settings(fractals : &mut Fractal) {
     info!("Initialising new fractal from file.");
 
-    // Clone the file path to avoid simultaneous mutable and immutable borrows.
-    let file_path = fractals.settings.fractal_file.clone();
+    // File path for settings file.
+    let file_path = format!("{}/{}", fractals.settings.fractals_folder, fractals.settings.fractal_file);
 
     // Save fractal settings to toml file.
     // Now call load_config without conflicting borrows.
@@ -102,8 +107,8 @@ pub fn load_settings(fractals : &mut Fractal) {
 pub fn save_settings(fractals: &mut Fractal) {
     info!("Saving fractal settings to file.");
 
-    // Clone the file path to avoid simultaneous mutable and immutable borrows.
-    let file_path = fractals.settings.fractal_file.clone();
+    // File path for settings file..
+    let file_path = format!("{}/{}", fractals.settings.fractals_folder, fractals.settings.fractal_file);
 
     // Now call save_config without conflicting borrows.
     let _save_status = fractals.save_config(&file_path);
@@ -124,7 +129,7 @@ pub fn cal_divergence(fractals : &mut Fractal) {
     // Iterate calculation over rows.
     for row in 0..fractals.rows {
         // Calculate the starting point for the row.
-        // Lust need to deduct incremental distance from
+        // Just need to deduct incremental distance from
         // efery row after the first (top) row.
         if row > 0 {
             st_c.im -= fractals.pt_div;
