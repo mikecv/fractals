@@ -80,10 +80,6 @@ pub fn enter_fractal(fractals : &mut Fractal) {
     info!("Fractal centrepoint: {}", fractals.mid_pt);
     info!("Fractal point division: {}", fractals.pt_div);
     info!("Fractal max iterations: {}", fractals.max_its);
-
-    // At this point we have an initialised fractal.
-    // From here we can re-initialise a new fractal or proceed to calculate
-    // point divergence for the initialised fractal.
 }
 
 // User selected option to initialise new fractal.
@@ -91,27 +87,75 @@ pub fn enter_fractal(fractals : &mut Fractal) {
 pub fn load_settings(fractals : &mut Fractal) {
     info!("Initialising new fractal from file.");
 
-    // File path for settings file.
-    let file_path = format!("{}/{}", fractals.settings.fractals_folder, fractals.settings.fractal_file);
+    // Default filename.
+    let default_file_name = &fractals.settings.fractal_file;
 
-    // Save fractal settings to toml file.
+    // Prompt the user for the filename.
+    print!("Enter the filename (without path) [default: {}]: ", default_file_name);
+    io::stdout().flush().expect("Failed to flush stdout");
+
+    // Read the user's entry.
+    let mut file_name = String::new();
+    io::stdin()
+        .read_line(&mut file_name)
+        .expect("Failed to read filename");
+    let file_name = file_name.trim();
+
+    // Use the default filename if the user enters nothing.
+    let file_name = if file_name.is_empty() {
+        default_file_name.to_string()
+    } else if file_name.contains('.') {
+        file_name.to_string()
+    } else {
+        format!("{}.toml", file_name)
+    };
+
+    // Construct the full file path.
+    let file_path = format!("{}/{}", fractals.settings.fractals_folder, file_name);
+
     // Now call load_config without conflicting borrows.
     let _load_status = fractals.load_config(&file_path);   
-
-    // At this point we have an initialised fractal.
-    // From here we can re-initialise a new fractal or proceed to calculate
-    // point divergence for the initialised fractal.
+    match _load_status {
+        Ok(_load_status) => println!("Settings loaded from: {}", file_path),
+        Err(_) => println!("Failed to read from file: {:?}", file_path),
+    }
 }
 
 // Save fractal settings to file.
 pub fn save_settings(fractals: &mut Fractal) {
-    info!("Saving fractal settings to file.");
+    // Default filename.
+    let default_file_name = &fractals.settings.fractal_file;
 
-    // File path for settings file..
-    let file_path = format!("{}/{}", fractals.settings.fractals_folder, fractals.settings.fractal_file);
+    // Prompt the user for the filename.
+    print!("Enter the filename (without path) [default: {}]: ", default_file_name);
+    io::stdout().flush().expect("Failed to flush stdout");
 
-    // Now call save_config without conflicting borrows.
+    // Read the user's entry.
+    let mut file_name = String::new();
+    io::stdin()
+        .read_line(&mut file_name)
+        .expect("Failed to read filename");
+    let file_name = file_name.trim();
+
+    // Use the default filename if the user enters nothing.
+    let file_name = if file_name.is_empty() {
+        default_file_name.to_string()
+    } else if file_name.contains('.') {
+        file_name.to_string()
+    } else {
+        format!("{}.toml", file_name)
+    };
+
+    // Construct the full file path.
+    let file_path = format!("{}/{}", fractals.settings.fractals_folder, file_name);
+
+    // Save the configuration to the file.
     let _save_status = fractals.save_config(&file_path);
+
+    match _save_status {
+        Ok(_save_status) => println!("Settings saved to: {}", file_path),
+        Err(_) => println!("Failed to save to file: {:?}", file_path),
+    }
 }
 
 // Function to calculate divergence at all points in fractal.

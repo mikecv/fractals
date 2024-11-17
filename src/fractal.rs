@@ -123,9 +123,6 @@ impl Fractal {
     // For points that reach the iteration count caculate
     // fractional divergence.
     pub fn cal_row_divergence(&mut self, row: u32, st_c: Complex<f64>) {
-
-        println!("Row: {:?}", row);
-        
         // Iterante over all the columns in the row.
         // Starting point is left of the row.
         let mut pt_row: Complex<f64> = st_c;
