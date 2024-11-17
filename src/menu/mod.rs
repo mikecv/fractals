@@ -130,7 +130,7 @@ pub fn cal_divergence(fractals : &mut Fractal) {
     for row in 0..fractals.rows {
         // Calculate the starting point for the row.
         // Just need to deduct incremental distance from
-        // efery row after the first (top) row.
+        // every row after the first (top) row.
         if row > 0 {
             st_c.im -= fractals.pt_div;
         }
@@ -142,9 +142,6 @@ pub fn cal_divergence(fractals : &mut Fractal) {
     // Determine delta time for divergence calculation.
     fractals.calc_duration = calc_start.elapsed();
     info!("Divergence calculations in: {:?}", fractals.calc_duration);
-
-    // At this point we have divergence iterations at every point.
-    // The next stage will be to configure the rendering.
 }
 
 // Function to print out the state of most of the class variables.

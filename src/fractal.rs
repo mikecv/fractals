@@ -120,11 +120,12 @@ impl Fractal {
     }
 
     // Methed to calculate fractal divergence at a single point.
-    // Arguments:
-    //      row: u32            The row number from the top, starting at 0.
-    //      st_c: Complex<f64>  Left most point of row to calculate divergence for.
+    // For points that reach the iteration count caculate
+    // fractional divergence.
     pub fn cal_row_divergence(&mut self, row: u32, st_c: Complex<f64>) {
 
+        println!("Row: {:?}", row);
+        
         // Iterante over all the columns in the row.
         // Starting point is left of the row.
         let mut pt_row: Complex<f64> = st_c;
