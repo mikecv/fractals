@@ -188,6 +188,28 @@ pub fn cal_divergence(fractals : &mut Fractal) {
     info!("Divergence calculations in: {:?}", fractals.calc_duration);
 }
 
+// Function to define the colour profile to use
+// when rendering images.
+// Defined as an array of inflection points with a
+// corresponding rgb value.
+pub fn def_col_profile(_fractals : &mut Fractal) {
+    info!("Defining colour profile.");
+
+}
+
+// Function to render the image according to the
+// defined colour profile..
+pub fn render_image(fractals : &mut Fractal) {
+    info!("Rendering image according to profile.");
+
+    // Initialise timer for image renderingn.
+    let render_start = Instant::now();
+
+    // Determine delta time for rendering.
+    fractals.render_duration = render_start.elapsed();
+    info!("Image rendering in: {:?}", fractals.render_duration);
+}
+
 // Function to print out the state of most of the class variables.
 pub fn print_class(fractals : &mut Fractal) {
     println!("Rows           : {:?}", fractals.rows);
@@ -198,4 +220,5 @@ pub fn print_class(fractals : &mut Fractal) {
     println!("Left limit     : {:?}", fractals.left_lim);
     println!("Top limit      : {:?}", fractals.top_lim);
     println!("Left top point : {:?}", fractals.pt_lt);
+    println!("Colour profile : {:?}", fractals.col_palete);
 }

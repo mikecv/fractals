@@ -24,7 +24,9 @@ pub struct Fractal {
     pub top_lim: f64,
     pub escape_its: Vec<Vec<u32>>,
     pub pt_lt: Complex<f64>,
+    pub col_palete: Vec<(f32, (u8, u8, u8))>,
     pub calc_duration: Duration,
+    pub render_duration: Duration,
 }
 
 // Sub-Struct of parameters for fractal setting.
@@ -36,6 +38,7 @@ pub struct FractalConfig {
     pub mid_pt: (f64, f64),
     pub pt_div: f64,
     pub max_its: u32,
+    pub col_palete: Vec<(f32, (u8, u8, u8))>,
     pub escape_its: Vec<Vec<u32>>,
 }
 
@@ -56,7 +59,9 @@ impl Fractal {
             top_lim: 0.0,
             escape_its: Vec::new(),
             pt_lt: Complex::new(0.0, 0.0),
+            col_palete: Vec::new(),
             calc_duration: Duration::new(0, 0),
+            render_duration: Duration::new(0, 0),
         }
     }
  
@@ -68,6 +73,7 @@ impl Fractal {
             mid_pt: (self.mid_pt.re, self.mid_pt.im),
             pt_div: self.pt_div,
             max_its: self.max_its,
+            col_palete: self.col_palete.clone(),
             escape_its: self.escape_its.clone(),
         }
     }
@@ -79,6 +85,7 @@ impl Fractal {
         self.mid_pt = Complex::new(config.mid_pt.0, config.mid_pt.1);
         self.pt_div = config.pt_div;
         self.max_its = config.max_its;
+        self.col_palete = config.col_palete;
     }
 
     // Save FractalConfig to a TOML file.
