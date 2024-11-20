@@ -65,10 +65,10 @@ fn main() {
             // Calculate fractal divergence.
             "c" => menu::cal_divergence(&mut fractals),
 
-            // Define colour profile for rendering.
-            "d" => menu::def_col_profile(&mut fractals),
+            // Define colour palete for rendering.
+            "d" => menu::def_col_palete(&mut fractals),
 
-            // Render image according to profile.
+            // Render image according to palete.
             "e" => menu::render_image(&mut fractals),
 
             // Save fractal settings and results to files.

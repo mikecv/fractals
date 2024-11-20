@@ -17,7 +17,7 @@ pub fn print_menu() {
     println!("A) Enter new fractal settings");
     println!("B) Initialise fractal from file");
     println!("C) Calculate fractal divergence");
-    println!("D) Define colour profile");
+    println!("D) Define colour palete");
     println!("E) Render fractal image");
 
     println!("F) Save fractal settings & results to file");
@@ -188,19 +188,26 @@ pub fn cal_divergence(fractals : &mut Fractal) {
     info!("Divergence calculations in: {:?}", fractals.calc_duration);
 }
 
-// Function to define the colour profile to use
+// Function to define the colour palete to use
 // when rendering images.
 // Defined as an array of inflection points with a
 // corresponding rgb value.
-pub fn def_col_profile(_fractals : &mut Fractal) {
-    info!("Defining colour profile.");
+pub fn def_col_palete(fractals : &mut Fractal) {
+    info!("Defining colour palete.");
 
+    add_color_to_palete(fractals, 0.1, (125, 0, 34));
+}
+
+// Function to add an entry to the colouur palete array.
+// This is a relative ratio to the max number of iterations
+pub fn add_color_to_palete(fractals : &mut Fractal, ratio: f32, color: (u8, u8, u8)) {
+    fractals.col_palete.push((ratio, color));
 }
 
 // Function to render the image according to the
-// defined colour profile..
+// defined colour palete.
 pub fn render_image(fractals : &mut Fractal) {
-    info!("Rendering image according to profile.");
+    info!("Rendering image according to colour palete.");
 
     // Initialise timer for image renderingn.
     let render_start = Instant::now();
@@ -220,5 +227,5 @@ pub fn print_class(fractals : &mut Fractal) {
     println!("Left limit     : {:?}", fractals.left_lim);
     println!("Top limit      : {:?}", fractals.top_lim);
     println!("Left top point : {:?}", fractals.pt_lt);
-    println!("Colour profile : {:?}", fractals.col_palete);
+    println!("Colour palete  : {:?}", fractals.col_palete);
 }
