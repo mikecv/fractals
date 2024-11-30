@@ -2,6 +2,7 @@
 
 use log::{info};
 
+use image::{Rgb, RgbImage};
 use inline_colorization::*;
 use num_complex::Complex;
 use std::io::{self, Write};
@@ -190,18 +191,56 @@ pub fn cal_divergence(fractals : &mut Fractal) {
 
 // Function to define the colour palete to use
 // when rendering images.
-// Defined as an array of inflection points with a
-// corresponding rgb value.
+// Defined as an array of iteration boundary limits and a
+// corresponding rgb value at that boundary.
 pub fn def_col_palete(fractals : &mut Fractal) {
     info!("Defining colour palete.");
 
-    add_color_to_palete(fractals, 0.1, (125, 0, 34));
+    println!("Enter palete boundary details.");
+    println!("Enter iteration count, followed by RGB colour at boundary.");
+    println!("End with boundary at max iterations: {:?}", fractals.max_its);
+
+    // Number of index boundary.
+    let mut idx: u8 = 0;
+
+    // First colour boundary at 0 iterations.
+    let mut its_bound: u32 = 0;
+    println!("({:02}) Iteration boundary: {:?}", idx, its_bound);
+    let mut red: u8 = get_user_input_numeric("     RED colour component: ");
+    let mut green: u8 = get_user_input_numeric("     GREEN colour component: ");
+    let mut blue: u8 = get_user_input_numeric("     BLUE colour component: ");
+    add_colour_to_palete(fractals, its_bound, (red, green, blue));
+
+    // Increment bountary index.
+    idx += 1;
+
+    // Keep prompting for palete boundary details until max iterations is reached.
+    while its_bound < fractals.max_its {
+
+        let its_bound_prompt = format!("({:02}) Iterations boundary: ", idx);
+        its_bound = get_user_input_numeric(&its_bound_prompt);
+        red = get_user_input_numeric("     RED colour component: ");
+        green = get_user_input_numeric("     GREEN colour component: ");
+        blue = get_user_input_numeric("     BLUE colour component: ");    
+
+        // Need to check if boundary outside max bounds.
+        // If greater that bounds set to max iterations.
+        if its_bound > fractals.max_its {
+            its_bound = fractals.max_its;
+        }   
+
+        // Add next colour boundary and colour to array.
+        add_colour_to_palete(fractals, its_bound, (red, green, blue));
+
+        // Increment boundary count and loop.
+        idx += 1;
+    }
 }
 
-// Function to add an entry to the colouur palete array.
-// This is a relative ratio to the max number of iterations
-pub fn add_color_to_palete(fractals : &mut Fractal, ratio: f32, color: (u8, u8, u8)) {
-    fractals.col_palete.push((ratio, color));
+// Function to add an entry to the colour palete array.
+// This is colour at a particular number  of iterations
+pub fn add_colour_to_palete(fractals : &mut Fractal, its_bound: u32, color: (u8, u8, u8)) {
+    fractals.col_palete.push((its_bound, color));
 }
 
 // Function to render the image according to the
@@ -209,12 +248,77 @@ pub fn add_color_to_palete(fractals : &mut Fractal, ratio: f32, color: (u8, u8, 
 pub fn render_image(fractals : &mut Fractal) {
     info!("Rendering image according to colour palete.");
 
+    print!("Enter the image filename (ext .png): ");
+    io::stdout().flush().expect("Failed to flush stdout");
+
+    // Read the user's entry.
+    let mut file_name = String::new();
+    io::stdin()
+        .read_line(&mut file_name)
+        .expect("Failed to read filename");
+    let file_name = file_name.trim();
+
+    // Construct the full file path.
+    let file_path = format!("{}/{}", fractals.settings.fractals_folder, file_name);
+
     // Initialise timer for image renderingn.
     let render_start = Instant::now();
+
+    // Define an image of the right size.
+    let rows = fractals.rows;
+    let cols = fractals.cols;
+    let mut img = RgbImage::new(cols, rows);
+
+    // Iterate through rows and columuns and
+    // set the pixel colour accordingly.
+    for y in 0..rows {
+        for x in 0..cols{
+            let pt_its: u32 = fractals.escape_its[y as usize][x as usize];
+            let px_col: Rgb<u8> = det_px_col(pt_its, &fractals.col_palete);
+            img.put_pixel(x, y, px_col);
+        }
+    }
+
+    // Save the image.
+    let _ = img.save(file_path);
 
     // Determine delta time for rendering.
     fractals.render_duration = render_start.elapsed();
     info!("Image rendering in: {:?}", fractals.render_duration);
+}
+
+// Function to determine the colour of the pixel.
+// Based on linear interpolation of colour palete.
+pub fn det_px_col(its: u32, col_pal: &Vec<(u32, (u8, u8, u8))>) -> Rgb<u8> {
+
+    // Iterate through the boundaries to find where `its` fits
+    // between consecutive boundaries.
+    for i in 0..col_pal.len() - 1 {
+        let (lower_bound, lower_color) = col_pal[i];
+        let (upper_bound, upper_color) = col_pal[i + 1];
+
+        if its > lower_bound && its <= upper_bound {
+            // Perform linear interpolation between the two colours.
+            let t = (its - lower_bound) as f32 / (upper_bound - lower_bound) as f32;
+            let r = (1.0 - t) * lower_color.0 as f32 + t * upper_color.0 as f32;
+            let g = (1.0 - t) * lower_color.1 as f32 + t * upper_color.1 as f32;
+            let b = (1.0 - t) * lower_color.2 as f32 + t * upper_color.2 as f32;
+
+            // Return interpolated colour for the pixel.
+            return Rgb([r as u8, g as u8, b as u8]);
+        }
+    }
+
+    // Handle the case where `its` doesn't fit into any range.
+    // For simplicity, you can return the last color in the palette or a default color.
+    if let Some(&(last_bound, last_color)) = col_pal.last() {
+        if its > last_bound {
+            return Rgb([last_color.0, last_color.1, last_color.2]);
+        }
+    }
+
+    // Default fallback colour (e.g., black).
+    Rgb([0, 0, 0])
 }
 
 // Function to print out the state of most of the class variables.

@@ -24,7 +24,7 @@ pub struct Fractal {
     pub top_lim: f64,
     pub escape_its: Vec<Vec<u32>>,
     pub pt_lt: Complex<f64>,
-    pub col_palete: Vec<(f32, (u8, u8, u8))>,
+    pub col_palete: Vec<(u32, (u8, u8, u8))>,
     pub calc_duration: Duration,
     pub render_duration: Duration,
 }
@@ -38,7 +38,7 @@ pub struct FractalConfig {
     pub mid_pt: (f64, f64),
     pub pt_div: f64,
     pub max_its: u32,
-    pub col_palete: Vec<(f32, (u8, u8, u8))>,
+    pub col_palete: Vec<(u32, (u8, u8, u8))>,
     pub escape_its: Vec<Vec<u32>>,
 }
 
