@@ -20,9 +20,10 @@ pub fn print_menu() {
     println!("C) Calculate fractal divergence");
     println!("D) Define colour palete");
     println!("E) Render fractal image");
+    println!("F) Generate iterations historgram");
 
-    println!("F) Save fractal settings & results to file");
-    println!("G) Print class variables");
+    println!("G) Save fractal settings & results to file");
+    println!("H) Print class variables");
 
     println!("{color_red}{style_bold}\nQ) Quit\n{style_reset}{color_reset}");
 }
@@ -35,7 +36,8 @@ pub fn get_user_input(prompt: &str) -> String {
 
     let mut input = String::new();
     io::stdin().read_line(&mut input).expect("Failed to read line");
-    input.trim().to_string()
+    input.trim().to_string();
+    input.to_lowercase()
 }
 
 // Get the user input(s0) for the menu selection.
@@ -120,6 +122,8 @@ pub fn load_settings(fractals : &mut Fractal) {
         Ok(_load_status) => println!("Settings loaded from: {}", file_path),
         Err(_) => println!("Failed to read from file: {:?}", file_path),
     }
+
+    info!("Initialising new fractal from {:?}", file_path);
 }
 
 // Save fractal settings to file.
@@ -187,6 +191,7 @@ pub fn cal_divergence(fractals : &mut Fractal) {
     // Determine delta time for divergence calculation.
     fractals.calc_duration = calc_start.elapsed();
     info!("Divergence calculations in: {:?}", fractals.calc_duration);
+    println!("Divergence calculations in: {:?}", fractals.calc_duration);
 }
 
 // Function to define the colour palete to use
@@ -204,7 +209,7 @@ pub fn def_col_palete(fractals : &mut Fractal) {
     let mut idx: u8 = 0;
 
     // First colour boundary at 0 iterations.
-    let mut its_bound: u32 = 0;
+    let mut its_bound: u32 = 1;
     println!("({:02}) Iteration boundary: {:?}", idx, its_bound);
     let mut red: u8 = get_user_input_numeric("     RED colour component: ");
     let mut green: u8 = get_user_input_numeric("     GREEN colour component: ");
@@ -260,6 +265,7 @@ pub fn render_image(fractals : &mut Fractal) {
 
     // Construct the full file path.
     let file_path = format!("{}/{}", fractals.settings.fractals_folder, file_name);
+    info!("Saving image to file: {:?}", file_path);
 
     // Initialise timer for image renderingn.
     let render_start = Instant::now();
@@ -285,6 +291,7 @@ pub fn render_image(fractals : &mut Fractal) {
     // Determine delta time for rendering.
     fractals.render_duration = render_start.elapsed();
     info!("Image rendering in: {:?}", fractals.render_duration);
+    println!("Image rendering in: {:?}", fractals.render_duration);
 }
 
 // Function to determine the colour of the pixel.
@@ -310,7 +317,7 @@ pub fn det_px_col(its: u32, col_pal: &Vec<(u32, (u8, u8, u8))>) -> Rgb<u8> {
     }
 
     // Handle the case where `its` doesn't fit into any range.
-    // For simplicity, you can return the last color in the palette or a default color.
+    // For simplicity, return the last colour in the palette.
     if let Some(&(last_bound, last_color)) = col_pal.last() {
         if its > last_bound {
             return Rgb([last_color.0, last_color.1, last_color.2]);
@@ -319,6 +326,13 @@ pub fn det_px_col(its: u32, col_pal: &Vec<(u32, (u8, u8, u8))>) -> Rgb<u8> {
 
     // Default fallback colour (e.g., black).
     Rgb([0, 0, 0])
+}
+
+// Generate iterations count histogram plot.
+// Useful tell when generating colour paletes as shows
+// iteration hot spots.
+pub fn generate_histogram(_fractals : &mut Fractal) {
+    info!("Generating iterations histogram.");
 }
 
 // Function to print out the state of most of the class variables.

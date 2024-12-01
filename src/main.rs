@@ -71,11 +71,14 @@ fn main() {
             // Render image according to palete.
             "e" => menu::render_image(&mut fractals),
 
+            // Generate iterations historgram.
+            "f" => menu::generate_histogram(&mut fractals),
+
             // Save fractal settings and results to files.
-            "f" => menu::save_settings(&mut fractals),
+            "g" => menu::save_settings(&mut fractals),
 
             // Print class variables.
-            "g" => menu::print_class(&mut fractals),
+            "h" => menu::print_class(&mut fractals),
 
             // Quitting application.
             "q" => {
