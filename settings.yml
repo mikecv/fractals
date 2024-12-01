@@ -6,3 +6,5 @@ program_web:        "galacticwingcommander"
 # Fractals
 fractals_folder:    "./my_fractals"
 fractal_file:       "fractal_settings.toml"
+hist_plot_log:      true
+

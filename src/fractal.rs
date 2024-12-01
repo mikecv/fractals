@@ -135,7 +135,7 @@ impl Fractal {
         let mut pt_row: Complex<f64> = st_c;
 
         for col in 0..self.cols {
-            // Iterate point along th
+            // Iterate point along the row.
             if col > 0 {
                 pt_row.re += self.pt_div;
             }

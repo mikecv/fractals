@@ -42,6 +42,8 @@ fn main() {
     // Now that settings have been loaded asynchronously, run the rest of the program synchronously.
     info!("Application started: {} v({})", settings.program_name, settings.program_ver);
 
+    println!("Historian plotting logrithmic: {:?}", settings.hist_plot_log);
+
     // Create fractals class instance.
     let mut fractals: Fractal = Fractal::init(settings);
 
@@ -72,8 +74,11 @@ fn main() {
             "e" => menu::render_image(&mut fractals),
 
             // Generate iterations historgram.
-            "f" => menu::generate_histogram(&mut fractals),
-
+            "f" => match menu::generate_histogram(&mut fractals) {
+                Ok(()) => println!("Histogram generated successfully!"),
+                Err(e) => eprintln!("Error generating histogram: {}", e),
+            }
+        
             // Save fractal settings and results to files.
             "g" => menu::save_settings(&mut fractals),
 

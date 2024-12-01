@@ -5,6 +5,7 @@ use log::{info};
 use image::{Rgb, RgbImage};
 use inline_colorization::*;
 use num_complex::Complex;
+use plotters::prelude::*;
 use std::io::{self, Write};
 use std::str::FromStr;
 use std::time::{Instant};
@@ -331,8 +332,80 @@ pub fn det_px_col(its: u32, col_pal: &Vec<(u32, (u8, u8, u8))>) -> Rgb<u8> {
 // Generate iterations count histogram plot.
 // Useful tell when generating colour paletes as shows
 // iteration hot spots.
-pub fn generate_histogram(_fractals : &mut Fractal) {
+pub fn generate_histogram(fractals : &mut Fractal) -> Result<(), Box<dyn std::error::Error>> {
     info!("Generating iterations histogram.");
+
+    let root = BitMapBackend::new("div_histogram.png", (800, 600)).into_drawing_area();
+    root.fill(&WHITE)?;
+
+    // Initialise plot vector.
+    let mut data = Vec::new();
+
+    // Iterate through possible iteration counts, i.e. 1 to maximum iterations.
+    // Then find number of occurances of its in the fractal image pixel divergence count,
+    // which is also going to be from 1 to maximum iterations.
+    // So the plott x axis is 1 to max_its, y axis will be 1 to (rows x columns) worst case.
+    // Keep track of peak interations count.
+    // And the largest iteration encountered.
+    // This is used to limit the axis lengths.
+    let mut peak_its: u32 = 0;
+    let mut end_its: u32 = 1;
+
+    // Iterate throu all possible iteration counts.
+    for its in 0..fractals.max_its {
+        let mut its_cnt: u32 = 0;
+
+        // Iterate through all pixels and check for matched iteration count.
+        for y in 0..fractals.cols {
+            for x in 0..fractals.rows {
+                // Check if the iterations count matches divergence count for this pixel.
+                if fractals.escape_its[x as usize][y as usize] == its {
+                    its_cnt += 1;
+                    // Check if new maximum.
+                    if its_cnt > peak_its {
+                        peak_its = its_cnt;
+                    }
+                }
+            }
+        }
+        // Check if any devergence at this count.
+        // If so, it's the largest count so far.
+        if its_cnt > 0 {
+            end_its = its;
+        }
+
+        // Determin number of times divergence count for number of iterations.
+        data.push((its, its_cnt));
+    }
+
+    // Max histogram count count
+    info!("Maximum divergence iterations count: {:?}", peak_its);
+
+    // Heighest iteration in image.
+    info!("Heighest iterations count: {:?}", end_its);
+
+    // Create a chart builder with dynamic Y-axis range.
+    let mut chart = ChartBuilder::on(&root)
+        .caption("Divergence Histogram", ("sans-serif", 50))
+        .margin(20)
+        .x_label_area_size(30)
+        .y_label_area_size(30)
+        .build_cartesian_2d(0u32..end_its, 0u32..peak_its)?;
+
+    chart.configure_mesh().draw()?;
+
+    chart
+        .draw_series(LineSeries::new(
+            data.into_iter(),
+            &RED,
+        ))?
+        .label("Divergence Histogram")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
+
+    // Add a legend.
+    chart.configure_series_labels().border_style(&BLACK).draw()?;
+
+    Ok(())
 }
 
 // Function to print out the state of most of the class variables.
