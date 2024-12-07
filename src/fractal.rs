@@ -1,13 +1,13 @@
 // Fractals data structure and methods.
 
-use log::{info};
+use log::info;
 
 use num_complex::Complex;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::f64::consts;
 use std::io::{self};
-use std::time::{Duration};
+use std::time::Duration;
 use toml;
 
 use crate::settings::Settings;
@@ -86,6 +86,10 @@ impl Fractal {
         self.pt_div = config.pt_div;
         self.max_its = config.max_its;
         self.col_palete = config.col_palete;
+        self.init_fractal_image(self.rows,
+            self.cols,
+            self.mid_pt,
+            self.pt_div);
     }
 
     // Save FractalConfig to a TOML file.

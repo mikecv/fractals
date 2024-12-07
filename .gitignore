@@ -1,5 +1,6 @@
 # Ignore code workspace.
 *.code-workspace
+/.vscode
 
 # Ignore target builds.
 /target
@@ -13,4 +14,3 @@
 
 # Ignore notes file.
 notes.txt
-

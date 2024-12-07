@@ -345,10 +345,10 @@ pub fn generate_histogram(fractals : &mut Fractal) -> Result<(), Box<dyn std::er
     // Then find number of occurances of its in the fractal image pixel divergence count,
     // which is also going to be from 1 to maximum iterations.
     // So the plott x axis is 1 to max_its, y axis will be 1 to (rows x columns) worst case.
-    // Keep track of peak interations count.
-    // And the largest iteration encountered.
+    // Keep track of maximum interations count (max_count).
+    // And the largest iteration encountered (end_its).
     // This is used to limit the axis lengths.
-    let mut peak_its: u32 = 0;
+    let mut max_count: u32 = 0;
     let mut end_its: u32 = 1;
 
     // Iterate throu all possible iteration counts.
@@ -362,35 +362,58 @@ pub fn generate_histogram(fractals : &mut Fractal) -> Result<(), Box<dyn std::er
                 if fractals.escape_its[x as usize][y as usize] == its {
                     its_cnt += 1;
                     // Check if new maximum.
-                    if its_cnt > peak_its {
-                        peak_its = its_cnt;
+                    if its_cnt > max_count {
+                        max_count = its_cnt;
                     }
                 }
             }
         }
-        // Check if any devergence at this count.
+        // Check if any divergence at this count.
         // If so, it's the largest count so far.
         if its_cnt > 0 {
             end_its = its;
         }
 
-        // Determin number of times divergence count for number of iterations.
-        data.push((its, its_cnt));
+        // If applicable, apply logarithmic transformation (add 1 to avoid log(0)).
+        // Natural log (ln(1 + x)) for better scaling.
+        if fractals.settings.hist_plot_log == true {
+            // Push the iteration and count to the data array.
+            // This time log of iteration count for scaling.
+            let log_cnt = (its_cnt as f64).ln_1p() as u32;
+            data.push((its, log_cnt));
+        }
+        else {
+            // Push the iteration and count to the data array.
+            data.push((its, its_cnt));
+        }
+    }
+
+    // Calculate the maximum logarithmic value for Y-axis.
+    if fractals.settings.hist_plot_log == true {
+        max_count = (max_count as f64).ln_1p() as u32;
     }
 
     // Max histogram count count
-    info!("Maximum divergence iterations count: {:?}", peak_its);
+    info!("Maximum divergence iterations count: {:?}", max_count);
 
     // Heighest iteration in image.
     info!("Heighest iterations count: {:?}", end_its);
 
+    // Title for histogram plot.
+    // Indicate if log scale.
+    let mut plot_title: String = "Divergence Histogram".to_string();
+    if fractals.settings.hist_plot_log == true {
+        // plot_title = format!("{:?} - {:?}", plot_title, "Log Scale".to_string());
+        plot_title = format!("{} - {}", plot_title, "Log Scale".to_string());
+    }
+
     // Create a chart builder with dynamic Y-axis range.
     let mut chart = ChartBuilder::on(&root)
-        .caption("Divergence Histogram", ("sans-serif", 50))
+        .caption("Divergence Histogram", 50)
         .margin(20)
         .x_label_area_size(30)
         .y_label_area_size(30)
-        .build_cartesian_2d(0u32..end_its, 0u32..peak_its)?;
+        .build_cartesian_2d(0u32..end_its, 0u32..max_count)?;
 
     chart.configure_mesh().draw()?;
 
@@ -399,7 +422,7 @@ pub fn generate_histogram(fractals : &mut Fractal) -> Result<(), Box<dyn std::er
             data.into_iter(),
             &RED,
         ))?
-        .label("Divergence Histogram")
+        .label(plot_title)
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
 
     // Add a legend.
