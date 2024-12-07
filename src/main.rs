@@ -1,6 +1,8 @@
 use log::info;
 use log4rs;
 
+use std::path::PathBuf;
+use std::fs::create_dir_all;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
@@ -22,14 +24,6 @@ async fn load_settings() -> Settings {
     settings
 }
 
-// Define constance for program state.
-#[derive(Debug)]
-pub enum AppState {
-    AppStart,
-    NewFractal,
-    DivComplete,
-}
-
 fn main() {
     // Logging configuration held in log4rs.yml.
     log4rs::init_file("log4rs.yml", Default::default()).unwrap();
@@ -38,8 +32,17 @@ fn main() {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let settings = rt.block_on(load_settings());
 
+    // Check if folder for results exists, if not, create it.
+    let mut wrt_path = PathBuf::new();       
+    wrt_path.push(&settings.fractals_folder);
+    if !wrt_path.exists() {
+        create_dir_all(&wrt_path).unwrap();
+    }
+
     // Now that settings have been loaded asynchronously, run the rest of the program synchronously.
     info!("Application started: {} v({})", settings.program_name, settings.program_ver);
+
+    println!("Historian plotting logrithmic: {:?}", settings.hist_plot_log);
 
     // Create fractals class instance.
     let mut fractals: Fractal = Fractal::init(settings);
@@ -48,7 +51,7 @@ fn main() {
     // Keep looping until user selects the quit option.
     loop {
         // Display the menu applicable to the application state.
-        menu::print_menu(&fractals.state);
+        menu::print_menu();
 
         // Get the user's parameter(s) selection.
         let choice = menu::get_user_input("Option: ");
@@ -56,19 +59,31 @@ fn main() {
         // Apply the users selection.
         match choice.trim() {
             // Initialise new fractal (user entry).
-            "e" => menu::enter_fractal(&mut fractals),
+            "a" => menu::enter_fractal(&mut fractals),
 
             // Initialise new fractal from file.
-            "f" => menu::load_settings(&mut fractals),
+            "b" => menu::load_settings(&mut fractals),
 
             // Calculate fractal divergence.
             "c" => menu::cal_divergence(&mut fractals),
 
-            // Print class variables.
-            "p" => menu::print_class(&mut fractals),
+            // Define colour palete for rendering.
+            "d" => menu::def_col_palete(&mut fractals),
 
-            // Save fractal settings to files.
-            "s" => menu::save_settings(&mut fractals),
+            // Render image according to palete.
+            "e" => menu::render_image(&mut fractals),
+
+            // Generate iterations historgram.
+            "f" => match menu::generate_histogram(&mut fractals) {
+                Ok(()) => println!("Histogram generated successfully!"),
+                Err(e) => eprintln!("Error generating histogram: {}", e),
+            }
+        
+            // Save fractal settings and results to files.
+            "g" => menu::save_settings(&mut fractals),
+
+            // Print class variables.
+            "h" => menu::print_class(&mut fractals),
 
             // Quitting application.
             "q" => {

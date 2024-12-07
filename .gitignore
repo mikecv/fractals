@@ -1,5 +1,6 @@
 # Ignore code workspace.
 *.code-workspace
+/.vscode
 
 # Ignore target builds.
 /target
@@ -9,8 +10,7 @@
 /logs/*.log
 
 # Ignore fractal settings files.
-fractal_settings.toml
+/my_fractals
 
 # Ignore notes file.
 notes.txt
-

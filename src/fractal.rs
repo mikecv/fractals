@@ -1,21 +1,20 @@
 // Fractals data structure and methods.
 
-use log::{info};
+use log::info;
 
 use num_complex::Complex;
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::f64::consts;
 use std::io::{self};
-use std::time::{Duration};
+use std::time::Duration;
 use toml;
 
 use crate::settings::Settings;
-use crate::AppState;
 
 // Struct of parameters for fractals generation.
 pub struct Fractal {
     pub settings: Settings,
-    pub state: AppState,
     pub rows: u32,
     pub cols: u32,
     pub mid_pt: Complex<f64>,
@@ -25,7 +24,9 @@ pub struct Fractal {
     pub top_lim: f64,
     pub escape_its: Vec<Vec<u32>>,
     pub pt_lt: Complex<f64>,
+    pub col_palete: Vec<(u32, (u8, u8, u8))>,
     pub calc_duration: Duration,
+    pub render_duration: Duration,
 }
 
 // Sub-Struct of parameters for fractal setting.
@@ -37,6 +38,8 @@ pub struct FractalConfig {
     pub mid_pt: (f64, f64),
     pub pt_div: f64,
     pub max_its: u32,
+    pub col_palete: Vec<(u32, (u8, u8, u8))>,
+    pub escape_its: Vec<Vec<u32>>,
 }
 
 // Initialise all struct variables.
@@ -47,7 +50,6 @@ impl Fractal {
 
         Fractal {
             settings: settings,
-            state: AppState::AppStart,
             rows: 0,
             cols: 0,
             mid_pt: Complex::new(0.0, 0.0),
@@ -57,7 +59,9 @@ impl Fractal {
             top_lim: 0.0,
             escape_its: Vec::new(),
             pt_lt: Complex::new(0.0, 0.0),
+            col_palete: Vec::new(),
             calc_duration: Duration::new(0, 0),
+            render_duration: Duration::new(0, 0),
         }
     }
  
@@ -69,6 +73,8 @@ impl Fractal {
             mid_pt: (self.mid_pt.re, self.mid_pt.im),
             pt_div: self.pt_div,
             max_its: self.max_its,
+            col_palete: self.col_palete.clone(),
+            escape_its: self.escape_its.clone(),
         }
     }
 
@@ -79,6 +85,11 @@ impl Fractal {
         self.mid_pt = Complex::new(config.mid_pt.0, config.mid_pt.1);
         self.pt_div = config.pt_div;
         self.max_its = config.max_its;
+        self.col_palete = config.col_palete;
+        self.init_fractal_image(self.rows,
+            self.cols,
+            self.mid_pt,
+            self.pt_div);
     }
 
     // Save FractalConfig to a TOML file.
@@ -120,36 +131,57 @@ impl Fractal {
     }
 
     // Methed to calculate fractal divergence at a single point.
-    // Arguments:
-    //      row: u32            The row number from the top, starting at 0.
-    //      st_c: Complex<f64>  Left most point of row to calculate divergence for.
+    // For points that reach the iteration count caculate
+    // fractional divergence.
     pub fn cal_row_divergence(&mut self, row: u32, st_c: Complex<f64>) {
-
         // Iterante over all the columns in the row.
+        // Starting point is left of the row.
+        let mut pt_row: Complex<f64> = st_c;
+
         for col in 0..self.cols {
+            // Iterate point along the row.
+            if col > 0 {
+                pt_row.re += self.pt_div;
+            }
+
             // Define diverges flag and set to false.
             let mut diverges: bool = false;
 
-            // Initialise divergence resukt to complex 0.
-            let mut it_fn: Complex<f64> = Complex::new(0.0, 0.0);
+            // Initialise divergence result to complex 0.
+            let mut px_fn: Complex<f64> = Complex::new(0.0, 0.0);
 
             // Initialise number of iterations.
             let mut num_its: u32 = 1;
 
             // Keep iterating until function diverges.
-            while (diverges == false) && (num_its < self.max_its) {
-                // Perform Mandelbrot function Fn+1 = Fn^2 + st_c
-                it_fn = (it_fn * it_fn) + st_c;
+            while !diverges && (num_its < self.max_its) {
+                // Perform Mandelbrot function Fn+1 = Fn^2 + pt_row.
+                px_fn = (px_fn * px_fn) + pt_row;
                 // Check if function diverges.
                 // Will diverge if modulus equal or greater than 2.
-                let mod_fn = Complex::norm(it_fn);
-                if mod_fn > 2.0 {
-                    diverges = true
+                if px_fn.norm() >= 2.0 {
+                    diverges = true;
                 }
                 else {
                     num_its += 1;
                 }
             }
+
+            // Calculate fractional divergence for higher definition.
+            let mod_fn = px_fn.norm();
+            let mu_log = if mod_fn > consts::E {
+                (mod_fn.ln().ln()) / consts::LN_2
+            } else {
+                0.0
+            };
+            let mut mu = num_its as f64 + 1.0 - mu_log;
+
+            // Limit fractional divergence to maximum iterations
+            if mu > self.max_its as f64 {
+                mu = self.max_its as f64;
+            }
+            num_its = mu as u32;
+
             // Save number of iterations for point.
             self.escape_its[row as usize][col as usize] = num_its;
         }

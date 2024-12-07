@@ -2,42 +2,31 @@
 
 use log::{info};
 
+use image::{Rgb, RgbImage};
 use inline_colorization::*;
 use num_complex::Complex;
+use plotters::prelude::*;
 use std::io::{self, Write};
 use std::str::FromStr;
 use std::time::{Instant};
 
-use crate::AppState;
 use crate::fractal::Fractal;
 
-// Print the menu selection.
-// This should be statefull assuming possible selections.
-pub fn print_menu(state: &AppState) {
+// Print the menu prompt / selections.
+pub fn print_menu() {
     println!("{color_green}{style_bold}\n====\nMenu\n====\n{style_reset}{color_reset}");
-    match state {
-        AppState::AppStart => {
-            info!("Application state at menu: START");
-            println!("E) Enter new fractal settings");
-            println!("F) Initialise fractal from file");
-        },
-        AppState::NewFractal => {
-            info!("Application state: NEW FRACTAL");
-            println!("E) Enter new fractal settings");
-            println!("F) Initialise fractal from file");
-            println!("C) Calculate fractal divergence");
-            println!("S) Save fractal settings to file");
-        },
-        AppState::DivComplete => {
-            info!("Application state: DIVERGENCE DONE");
-            println!("E) Enter new fractal settings");
-            println!("F) Initialise fractal from file");
-            println!("C) Calculate fractal divergence");
-            println!("S) Save fractal settings to file");
-        },
-    }
-    println!("P) Print class variables");
-    println!("Q) Quit\n");
+
+    println!("A) Enter new fractal settings");
+    println!("B) Initialise fractal from file");
+    println!("C) Calculate fractal divergence");
+    println!("D) Define colour palete");
+    println!("E) Render fractal image");
+    println!("F) Generate iterations historgram");
+
+    println!("G) Save fractal settings & results to file");
+    println!("H) Print class variables");
+
+    println!("{color_red}{style_bold}\nQ) Quit\n{style_reset}{color_reset}");
 }
 
 // Get user input for string input.
@@ -48,7 +37,8 @@ pub fn get_user_input(prompt: &str) -> String {
 
     let mut input = String::new();
     io::stdin().read_line(&mut input).expect("Failed to read line");
-    input.trim().to_string()
+    input.trim().to_string();
+    input.to_lowercase()
 }
 
 // Get the user input(s0) for the menu selection.
@@ -94,11 +84,6 @@ pub fn enter_fractal(fractals : &mut Fractal) {
     info!("Fractal centrepoint: {}", fractals.mid_pt);
     info!("Fractal point division: {}", fractals.pt_div);
     info!("Fractal max iterations: {}", fractals.max_its);
-
-    // At this point we have an initialised fractal.
-    // From here we can re-initialise a new fractal or proceed to calculate
-    // point divergence for the initialised fractal.
-    fractals.state = AppState::NewFractal;
 }
 
 // User selected option to initialise new fractal.
@@ -106,28 +91,77 @@ pub fn enter_fractal(fractals : &mut Fractal) {
 pub fn load_settings(fractals : &mut Fractal) {
     info!("Initialising new fractal from file.");
 
-    // Clone the file path to avoid simultaneous mutable and immutable borrows.
-    let file_path = fractals.settings.fractal_file.clone();
+    // Default filename.
+    let default_file_name = &fractals.settings.fractal_file;
 
-    // Save fractal settings to toml file.
+    // Prompt the user for the filename.
+    print!("Enter the filename (without path) [default: {}]: ", default_file_name);
+    io::stdout().flush().expect("Failed to flush stdout");
+
+    // Read the user's entry.
+    let mut file_name = String::new();
+    io::stdin()
+        .read_line(&mut file_name)
+        .expect("Failed to read filename");
+    let file_name = file_name.trim();
+
+    // Use the default filename if the user enters nothing.
+    let file_name = if file_name.is_empty() {
+        default_file_name.to_string()
+    } else if file_name.contains('.') {
+        file_name.to_string()
+    } else {
+        format!("{}.toml", file_name)
+    };
+
+    // Construct the full file path.
+    let file_path = format!("{}/{}", fractals.settings.fractals_folder, file_name);
+
     // Now call load_config without conflicting borrows.
     let _load_status = fractals.load_config(&file_path);   
+    match _load_status {
+        Ok(_load_status) => println!("Settings loaded from: {}", file_path),
+        Err(_) => println!("Failed to read from file: {:?}", file_path),
+    }
 
-    // At this point we have an initialised fractal.
-    // From here we can re-initialise a new fractal or proceed to calculate
-    // point divergence for the initialised fractal.
-    fractals.state = AppState::NewFractal;
+    info!("Initialising new fractal from {:?}", file_path);
 }
 
 // Save fractal settings to file.
 pub fn save_settings(fractals: &mut Fractal) {
-    info!("Saving fractal settings to file.");
+    // Default filename.
+    let default_file_name = &fractals.settings.fractal_file;
 
-    // Clone the file path to avoid simultaneous mutable and immutable borrows.
-    let file_path = fractals.settings.fractal_file.clone();
+    // Prompt the user for the filename.
+    print!("Enter the filename (without path) [default: {}]: ", default_file_name);
+    io::stdout().flush().expect("Failed to flush stdout");
 
-    // Now call save_config without conflicting borrows.
+    // Read the user's entry.
+    let mut file_name = String::new();
+    io::stdin()
+        .read_line(&mut file_name)
+        .expect("Failed to read filename");
+    let file_name = file_name.trim();
+
+    // Use the default filename if the user enters nothing.
+    let file_name = if file_name.is_empty() {
+        default_file_name.to_string()
+    } else if file_name.contains('.') {
+        file_name.to_string()
+    } else {
+        format!("{}.toml", file_name)
+    };
+
+    // Construct the full file path.
+    let file_path = format!("{}/{}", fractals.settings.fractals_folder, file_name);
+
+    // Save the configuration to the file.
     let _save_status = fractals.save_config(&file_path);
+
+    match _save_status {
+        Ok(_save_status) => println!("Settings saved to: {}", file_path),
+        Err(_) => println!("Failed to save to file: {:?}", file_path),
+    }
 }
 
 // Function to calculate divergence at all points in fractal.
@@ -145,8 +179,8 @@ pub fn cal_divergence(fractals : &mut Fractal) {
     // Iterate calculation over rows.
     for row in 0..fractals.rows {
         // Calculate the starting point for the row.
-        // Lust need to deduct incremental distance from
-        // efery row after the first (top) row.
+        // Just need to deduct incremental distance from
+        // every row after the first (top) row.
         if row > 0 {
             st_c.im -= fractals.pt_div;
         }
@@ -158,14 +192,247 @@ pub fn cal_divergence(fractals : &mut Fractal) {
     // Determine delta time for divergence calculation.
     fractals.calc_duration = calc_start.elapsed();
     info!("Divergence calculations in: {:?}", fractals.calc_duration);
-
-    // At this point we have divergence iterations at every point.
-    fractals.state = AppState::DivComplete;
+    println!("Divergence calculations in: {:?}", fractals.calc_duration);
 }
 
-// Function to print out the state of the class variables.
+// Function to define the colour palete to use
+// when rendering images.
+// Defined as an array of iteration boundary limits and a
+// corresponding rgb value at that boundary.
+pub fn def_col_palete(fractals : &mut Fractal) {
+    info!("Defining colour palete.");
+
+    println!("Enter palete boundary details.");
+    println!("Enter iteration count, followed by RGB colour at boundary.");
+    println!("End with boundary at max iterations: {:?}", fractals.max_its);
+
+    // Number of index boundary.
+    let mut idx: u8 = 0;
+
+    // First colour boundary at 0 iterations.
+    let mut its_bound: u32 = 1;
+    println!("({:02}) Iteration boundary: {:?}", idx, its_bound);
+    let mut red: u8 = get_user_input_numeric("     RED colour component: ");
+    let mut green: u8 = get_user_input_numeric("     GREEN colour component: ");
+    let mut blue: u8 = get_user_input_numeric("     BLUE colour component: ");
+    add_colour_to_palete(fractals, its_bound, (red, green, blue));
+
+    // Increment bountary index.
+    idx += 1;
+
+    // Keep prompting for palete boundary details until max iterations is reached.
+    while its_bound < fractals.max_its {
+
+        let its_bound_prompt = format!("({:02}) Iterations boundary: ", idx);
+        its_bound = get_user_input_numeric(&its_bound_prompt);
+        red = get_user_input_numeric("     RED colour component: ");
+        green = get_user_input_numeric("     GREEN colour component: ");
+        blue = get_user_input_numeric("     BLUE colour component: ");    
+
+        // Need to check if boundary outside max bounds.
+        // If greater that bounds set to max iterations.
+        if its_bound > fractals.max_its {
+            its_bound = fractals.max_its;
+        }   
+
+        // Add next colour boundary and colour to array.
+        add_colour_to_palete(fractals, its_bound, (red, green, blue));
+
+        // Increment boundary count and loop.
+        idx += 1;
+    }
+}
+
+// Function to add an entry to the colour palete array.
+// This is colour at a particular number  of iterations
+pub fn add_colour_to_palete(fractals : &mut Fractal, its_bound: u32, color: (u8, u8, u8)) {
+    fractals.col_palete.push((its_bound, color));
+}
+
+// Function to render the image according to the
+// defined colour palete.
+pub fn render_image(fractals : &mut Fractal) {
+    info!("Rendering image according to colour palete.");
+
+    print!("Enter the image filename (ext .png): ");
+    io::stdout().flush().expect("Failed to flush stdout");
+
+    // Read the user's entry.
+    let mut file_name = String::new();
+    io::stdin()
+        .read_line(&mut file_name)
+        .expect("Failed to read filename");
+    let file_name = file_name.trim();
+
+    // Construct the full file path.
+    let file_path = format!("{}/{}", fractals.settings.fractals_folder, file_name);
+    info!("Saving image to file: {:?}", file_path);
+
+    // Initialise timer for image renderingn.
+    let render_start = Instant::now();
+
+    // Define an image of the right size.
+    let rows = fractals.rows;
+    let cols = fractals.cols;
+    let mut img = RgbImage::new(cols, rows);
+
+    // Iterate through rows and columuns and
+    // set the pixel colour accordingly.
+    for y in 0..rows {
+        for x in 0..cols{
+            let pt_its: u32 = fractals.escape_its[y as usize][x as usize];
+            let px_col: Rgb<u8> = det_px_col(pt_its, &fractals.col_palete);
+            img.put_pixel(x, y, px_col);
+        }
+    }
+
+    // Save the image.
+    let _ = img.save(file_path);
+
+    // Determine delta time for rendering.
+    fractals.render_duration = render_start.elapsed();
+    info!("Image rendering in: {:?}", fractals.render_duration);
+    println!("Image rendering in: {:?}", fractals.render_duration);
+}
+
+// Function to determine the colour of the pixel.
+// Based on linear interpolation of colour palete.
+pub fn det_px_col(its: u32, col_pal: &Vec<(u32, (u8, u8, u8))>) -> Rgb<u8> {
+
+    // Iterate through the boundaries to find where `its` fits
+    // between consecutive boundaries.
+    for i in 0..col_pal.len() - 1 {
+        let (lower_bound, lower_color) = col_pal[i];
+        let (upper_bound, upper_color) = col_pal[i + 1];
+
+        if its > lower_bound && its <= upper_bound {
+            // Perform linear interpolation between the two colours.
+            let t = (its - lower_bound) as f32 / (upper_bound - lower_bound) as f32;
+            let r = (1.0 - t) * lower_color.0 as f32 + t * upper_color.0 as f32;
+            let g = (1.0 - t) * lower_color.1 as f32 + t * upper_color.1 as f32;
+            let b = (1.0 - t) * lower_color.2 as f32 + t * upper_color.2 as f32;
+
+            // Return interpolated colour for the pixel.
+            return Rgb([r as u8, g as u8, b as u8]);
+        }
+    }
+
+    // Handle the case where `its` doesn't fit into any range.
+    // For simplicity, return the last colour in the palette.
+    if let Some(&(last_bound, last_color)) = col_pal.last() {
+        if its > last_bound {
+            return Rgb([last_color.0, last_color.1, last_color.2]);
+        }
+    }
+
+    // Default fallback colour (e.g., black).
+    Rgb([0, 0, 0])
+}
+
+// Generate iterations count histogram plot.
+// Useful tell when generating colour paletes as shows
+// iteration hot spots.
+pub fn generate_histogram(fractals : &mut Fractal) -> Result<(), Box<dyn std::error::Error>> {
+    info!("Generating iterations histogram.");
+
+    let root = BitMapBackend::new("div_histogram.png", (800, 600)).into_drawing_area();
+    root.fill(&WHITE)?;
+
+    // Initialise plot vector.
+    let mut data = Vec::new();
+
+    // Iterate through possible iteration counts, i.e. 1 to maximum iterations.
+    // Then find number of occurances of its in the fractal image pixel divergence count,
+    // which is also going to be from 1 to maximum iterations.
+    // So the plott x axis is 1 to max_its, y axis will be 1 to (rows x columns) worst case.
+    // Keep track of maximum interations count (max_count).
+    // And the largest iteration encountered (end_its).
+    // This is used to limit the axis lengths.
+    let mut max_count: u32 = 0;
+    let mut end_its: u32 = 1;
+
+    // Iterate throu all possible iteration counts.
+    for its in 0..fractals.max_its {
+        let mut its_cnt: u32 = 0;
+
+        // Iterate through all pixels and check for matched iteration count.
+        for y in 0..fractals.cols {
+            for x in 0..fractals.rows {
+                // Check if the iterations count matches divergence count for this pixel.
+                if fractals.escape_its[x as usize][y as usize] == its {
+                    its_cnt += 1;
+                    // Check if new maximum.
+                    if its_cnt > max_count {
+                        max_count = its_cnt;
+                    }
+                }
+            }
+        }
+        // Check if any divergence at this count.
+        // If so, it's the largest count so far.
+        if its_cnt > 0 {
+            end_its = its;
+        }
+
+        // If applicable, apply logarithmic transformation (add 1 to avoid log(0)).
+        // Natural log (ln(1 + x)) for better scaling.
+        if fractals.settings.hist_plot_log == true {
+            // Push the iteration and count to the data array.
+            // This time log of iteration count for scaling.
+            let log_cnt = (its_cnt as f64).ln_1p() as u32;
+            data.push((its, log_cnt));
+        }
+        else {
+            // Push the iteration and count to the data array.
+            data.push((its, its_cnt));
+        }
+    }
+
+    // Calculate the maximum logarithmic value for Y-axis.
+    if fractals.settings.hist_plot_log == true {
+        max_count = (max_count as f64).ln_1p() as u32;
+    }
+
+    // Max histogram count count
+    info!("Maximum divergence iterations count: {:?}", max_count);
+
+    // Heighest iteration in image.
+    info!("Heighest iterations count: {:?}", end_its);
+
+    // Title for histogram plot.
+    // Indicate if log scale.
+    let mut plot_title: String = "Divergence Histogram".to_string();
+    if fractals.settings.hist_plot_log == true {
+        // plot_title = format!("{:?} - {:?}", plot_title, "Log Scale".to_string());
+        plot_title = format!("{} - {}", plot_title, "Log Scale".to_string());
+    }
+
+    // Create a chart builder with dynamic Y-axis range.
+    let mut chart = ChartBuilder::on(&root)
+        .caption("Divergence Histogram", 50)
+        .margin(20)
+        .x_label_area_size(30)
+        .y_label_area_size(30)
+        .build_cartesian_2d(0u32..end_its, 0u32..max_count)?;
+
+    chart.configure_mesh().draw()?;
+
+    chart
+        .draw_series(LineSeries::new(
+            data.into_iter(),
+            &RED,
+        ))?
+        .label(plot_title)
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
+
+    // Add a legend.
+    chart.configure_series_labels().border_style(&BLACK).draw()?;
+
+    Ok(())
+}
+
+// Function to print out the state of most of the class variables.
 pub fn print_class(fractals : &mut Fractal) {
-    println!("App state      : {:?}", fractals.state);
     println!("Rows           : {:?}", fractals.rows);
     println!("Columns        : {:?}", fractals.cols);
     println!("Centre point   : {:?}", fractals.mid_pt);
@@ -174,4 +441,5 @@ pub fn print_class(fractals : &mut Fractal) {
     println!("Left limit     : {:?}", fractals.left_lim);
     println!("Top limit      : {:?}", fractals.top_lim);
     println!("Left top point : {:?}", fractals.pt_lt);
+    println!("Colour palete  : {:?}", fractals.col_palete);
 }
